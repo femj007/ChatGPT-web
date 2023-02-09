@@ -8,6 +8,8 @@
 
 **注意：本项目不提供API Key，需要自行前往OpenAI官网申请（注册账号需要海外手机号）。参考：[API REFERENCE](https://platform.openai.com/docs/api-reference/authentication)**
 
+![Example 1](imgs/ex1.png)
+
 ## 安装
 
 要安装ChatGPT-web，请确保你已经安装了Python 3.5或更高版本，并且已经安装了下列Python库：
