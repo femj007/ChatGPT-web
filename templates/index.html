@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI ChatGPT</title>
+    <link
+        rel="shortcut icon"
+        href="{{ url_for('static', filename='dog.png') }}"
+    />
+    <style>
+        /* 设置页面背景颜色 */
+        body {
+            background-color: #f2f2f2;
+        }
+       /* 设置标题的样式 */
+    h2 {
+        text-align: center;
+        padding: 30px;
+    }
+    
+    /* 设置表单的样式 */
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px;
+    }
+    
+    /* 设置输入框的样式 */
+    textarea {
+        width: 50%;
+        height: 200px;
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
+    /* 设置提交按钮的样式 */
+    input[type="submit"] {
+        width: 100px;
+        height: 40px;
+        background-color: green;
+        color: white;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    /* 设置聊天内容的样式 */
+    .chat {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        margin-top: 30px;
+        padding: 20px;
+    }
+    
+    /* 设置聊天内容的标题样式 */
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-right: 20px;
+    }
+    
+    /* 设置聊天内容的文本样式 */
+    .content {
+        font-size: 16px;
+        white-space: pre-wrap;
+    }
+</style>
+</head>
+
+<body>
+  <h2>OpenAI ChatGPT</h2>
+  {% if message %} {{ message }} {% endif %}
+  <form method="post">
+      <textarea name="question" placeholder="点击这里输入问题"></textarea>
+      <input type="submit" value="提交">
+  </form>
+  {% if question and res %}
+    <div class="chat">
+        <div class="title">人类:</div>
+        <pre class="content">{{ question }}</pre>
+    </div>
+      <hr />
+    <div class="chat" >
+      <div class="title">ChatGPT:</div>
+      <pre class="content">{{ res }}</pre>
+      <!-- <pre style="text-align:left; white-space: pre-wrap; word-wrap: break-word;" id="res">{{ res }}</pre> -->
+    </div>
+  {% endif %}
+    </div>
+</body>
+<script>
+    let loading = document.getElementById('loading');
+    let form = document.querySelector('form');
+    form.addEventListener('submit', () => {
+        loading.style.display = 'block';
+    });
+</script>
+</html>
