@@ -3,10 +3,17 @@ import os
 import openai
 from flask import Flask, redirect, render_template, request, url_for
 from logger import saveChatLog
+from revChatGPT.V1 import Chatbot
 
 app = Flask(__name__)
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
+my_email = os.getenv("OPENAI_EMAIL")
+my_password = os.getenv("OPENAI_PASSWORD")
+chatbot = Chatbot(config={
+  "email": my_email,
+  "password": my_password,
+  "paid": True # Change to False if the account is not plus
+})
 
 @app.route("/", methods=("GET", "POST"))
 def index():
@@ -14,31 +21,45 @@ def index():
         if len(request.form['question']) < 1:
             return render_template(
                 'index.html', question="null", res="问题不能为空")
+        prev_text = ""
         question = request.form['question']
         print("======================================")
-        print("接到请求:", question)
-        res = get_completion(question)
-        print("问题：\n", question)
-        print("答案：\n", res)
+        print("Human:", question)
+        res = ''
+        for data in chatbot.ask(question):
+            message = data["message"][len(prev_text) :]
+            res += message
+            print(message, end="", flush=True)
+            prev_text = data["message"]
+        
+        print("Question: \n", question)
+        print("Answer: \n", res)
         saveChatLog(question, res)
 
         return render_template('index.html', question=question, res=str(res))
     return render_template('index.html', question=0)    
 
-def get_completion(question):
-    try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=f"{question}\n",
-            temperature=0.9,
-            max_tokens=2048,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0.6,
-            stop=None
-        )
-    except Exception as e:
+# TODO: a function to chat
+@app.route("/chat", methods=("POST"))
+def chat():
+    if request.method == 'POST':
+        try:
+            question = request.form['question']
+            prev_text = ""
+            print("======================================")
+            print("Human:", question)
+            res = ''
+            for data in chatbot.ask(question):
+                message = data["message"][len(prev_text) :]
+                res += message
+                print(message, end="", flush=True)
+                prev_text = data["message"]
+            
+            saveChatLog(question, res)
+            return jsonify({"response": res}), 200
 
-        print(e)
-        return e
-    return response["choices"][0].text
+
+        except Exception as e:
+            print(e)
+            return e
+
