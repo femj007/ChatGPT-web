@@ -1,4 +1,5 @@
 from revChatGPT.V1 import Chatbot
+import os
 
 chatbot = Chatbot(config={
   "email": os.getenv("OPENAI_EMAIL"),
