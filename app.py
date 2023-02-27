@@ -40,7 +40,7 @@ def index():
     return render_template('index.html', question=0)    
 
 # TODO: a function to chat
-@app.route("/chat", methods=("POST"))
+@app.route("/chat", methods=("GET", "POST"))
 def chat():
     if request.method == 'POST':
         try:
