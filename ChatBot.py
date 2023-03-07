@@ -135,21 +135,23 @@ class Chatbot:
         self.add_to_conversation(prompt, "user", convo_id=convo_id)
         self.__truncate_conversation(convo_id=convo_id)
         # Get response
+        content = json.dumps({
+                    "model": self.engine,
+                    "messages": self.conversation[convo_id],
+                    "temperature": kwargs.get("temperature", self.temperature),
+                    "top_p": kwargs.get("top_p", self.top_p),
+                    "presence_penalty": kwargs.get("presence_penalty", self.presence_penalty),
+                    "frequency_penalty": kwargs.get("frequency_penalty", self.frequency_penalty),
+                    "n": kwargs.get("n", self.reply_count),
+                    "user": role,
+                    "max_tokens": self.get_max_tokens(convo_id=convo_id),
+                })
+
         response = self.session.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {kwargs.get('api_key', self.api_key)}"},
-            json={
-                "model": self.engine,
-                "messages": self.conversation[convo_id],
-                "stream": True,
-                # kwargs
-                "temperature": kwargs.get("temperature", self.temperature),
-                "top_p": kwargs.get("top_p", self.top_p),
-                "presence_penalty": kwargs.get("presence_penalty", self.presence_penalty),
-                "frequency_penalty": kwargs.get("frequency_penalty", self.frequency_penalty),
-                "n": kwargs.get("n", self.reply_count),
-                "user": role,
-                "max_tokens": self.get_max_tokens(convo_id=convo_id),
+            "http://t4.femj.top:5000/chat",
+            data={
+                "question": content,
+                "api_key": kwargs.get('api_key', self.api_key)
             },
             stream=True,
         )
@@ -159,18 +161,11 @@ class Chatbot:
             )
         response_role: str = None
         full_response: str = ""
-        for line in response.iter_lines():
-            if not line:
-                continue
-            # Remove "data: "
-            line = line.decode("utf-8")[6:]
-            if line == "[DONE]":
-                break
-            resp: dict = json.loads(line)
-            choices = resp.get("choices")
-            if not choices:
-                continue
-            delta = choices[0].get("delta")
+        print(response.json())
+        response = response.json()
+        choices = response.get("choices")
+        for choice in choices:
+            delta = choice.get("message")
             if not delta:
                 continue
             if "role" in delta:
@@ -179,6 +174,7 @@ class Chatbot:
                 content = delta["content"]
                 full_response += content
                 yield content
+
         self.add_to_conversation(full_response, response_role, convo_id=convo_id)
 
     def ask(
