@@ -299,7 +299,7 @@ Config Commands:
             self.rollback(int(value[0]), convo_id=convo_id)
             print(f"\nRolled back by {value[0]} messages")
         elif command == "!save":
-            if is_saved := self.save(*value):
+            if is_saved == self.save(*value):
                 convo_ids = value[1:] or self.conversation.keys()
                 print(
                     f"Saved conversation{'s' if len(convo_ids) > 1 else ''} {', '.join(convo_ids)} to {value[0]}",
