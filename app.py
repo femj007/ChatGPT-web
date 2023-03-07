@@ -1,7 +1,7 @@
 import os
 
 import openai
-from flask import Flask, redirect, render_template, request, url_for, jsonify 
+from flask import Flask, redirect, render_template, request, url_for, jsonify, json
 from logger import saveChatLog
 from ChatBot import Chatbot
 import requests
@@ -41,20 +41,20 @@ def chat():
             prev_text = ""
             print("======================================")
             print("Human:", question)
-            res = chatbot.ask(question)
+            # res = chatbot.ask(question)
 
             # Get response
             session = requests.Session()
             response = session.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers={"Authorization": f"Bearer {API_KEY}"},
-                json=question,
+                json=json.loads(question),
                 stream=True,
             )
-            print(response)
-            print("Answer: \n", res)
-            saveChatLog(question, res)
-            return jsonify({"response": res}), 200
+            print(response.json())
+            # print("Answer: \n", res)
+            saveChatLog(question, response.json())
+            return response.json(), 200
 
 
         except Exception as e:
