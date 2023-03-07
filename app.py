@@ -4,7 +4,7 @@ import openai
 from flask import Flask, redirect, render_template, request, url_for, jsonify 
 from logger import saveChatLog
 from ChatBot import Chatbot
-from utils import create_session
+import requests
 
 app = Flask(__name__)
 
@@ -44,7 +44,7 @@ def chat():
             res = chatbot.ask(question)
 
             # Get response
-            session = create_session()
+            session = requests.Session()
             response = session.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers={"Authorization": f"Bearer {API_KEY}"},
