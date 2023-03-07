@@ -1,9 +1,10 @@
 import os
 
 import openai
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, jsonify 
 from logger import saveChatLog
 from ChatBot import Chatbot
+from utils import create_session
 
 app = Flask(__name__)
 
@@ -24,8 +25,6 @@ def index():
         print("======================================")
         print("Human:", question)
         res = chatbot.ask(question)
-
-        print("Question: \n", question)
         print("Answer: \n", res)
         saveChatLog(question, res)
 
@@ -33,28 +32,34 @@ def index():
     return render_template('index.html', question=0)    
 
 # TODO: a function to chat
-@app.route("/chat", methods=("GET", "POST"))
+@app.route("/chat", methods=["POST"])
 def chat():
     if request.method == 'POST':
         try:
             question = request.form['question']
+            print(question)
             prev_text = ""
             print("======================================")
             print("Human:", question)
-            res = ''
-            for data in chatbot.ask(question):
-                message = data["message"][len(prev_text) :]
-                res += message
-                print(message, end="", flush=True)
-                prev_text = data["message"]
-            
+            res = chatbot.ask(question)
+
+            # Get response
+            session = create_session()
+            response = session.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={"Authorization": f"Bearer {API_KEY}"},
+                json=question,
+                stream=True,
+            )
+            print(response)
+            print("Answer: \n", res)
             saveChatLog(question, res)
             return jsonify({"response": res}), 200
 
 
         except Exception as e:
             print(e)
-            return e
+            return jsonify({"response": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
