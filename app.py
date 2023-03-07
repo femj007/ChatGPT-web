@@ -3,17 +3,15 @@ import os
 import openai
 from flask import Flask, redirect, render_template, request, url_for
 from logger import saveChatLog
-from revChatGPT.V1 import Chatbot
+from ChatBot import Chatbot
 
 app = Flask(__name__)
 
-my_email = os.getenv("OPENAI_EMAIL")
-my_password = os.getenv("OPENAI_PASSWORD")
-chatbot = Chatbot(config={
-  "email": my_email,
-  "password": my_password,
-  "paid": True # Change to False if the account is not plus
-})
+API_KEY = os.getenv("OPENAI_API_KEY")
+
+chatbot = Chatbot(
+    api_key=API_KEY
+)
 
 @app.route("/", methods=("GET", "POST"))
 def index():
@@ -25,13 +23,8 @@ def index():
         question = request.form['question']
         print("======================================")
         print("Human:", question)
-        res = ''
-        for data in chatbot.ask(question):
-            message = data["message"][len(prev_text) :]
-            res += message
-            print(message, end="", flush=True)
-            prev_text = data["message"]
-        
+        res = chatbot.ask(question)
+
         print("Question: \n", question)
         print("Answer: \n", res)
         saveChatLog(question, res)
@@ -63,3 +56,5 @@ def chat():
             print(e)
             return e
 
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
